@@ -58,51 +58,74 @@
         <input id="m" autocomplete="off" /><button>Send</button>
     </form>
     <script src="/socket.io/socket.io.js"></script>
-<script src="https://code.jquery.com/jquery-1.11.1.js"></script>
-<script>
-  $(function () {
-    var socket = io();
-    // On demande le pseudo, on l'envoie au serveur et on l'affiche dans le titre
-    var pseudo = prompt('Quel est votre pseudo ?');
+    <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+    <script>
+        $(function () {
+            var socket = io();
+            // On demande le pseudo, on l'envoie au serveur et on l'affiche dans le titre
+            var mute= [];
+            var pseudo = prompt('Quel est votre pseudo ?');
             socket.emit('nouveau_client', pseudo);
             document.title = pseudo + ' - ' + document.title;
 
-    socket.on('chat message', function(data){
-      //$('#messages').append($('<li>').text(msg));
-        if (data.msg.startsWith('/whisper')){
-            if (data.msg.startsWith('/whisper '+pseudo)){
-                if (data.pseudo != pseudo){insereMessage(data.pseudo,data.msg)} 
-            }
-           
-        }
-        else{
-            if (data.pseudo != pseudo){insereMessage(data.pseudo,data.msg)}
-        }
-        
-    });
-    // Quand un nouveau client se connecte, on affiche l'information
-    socket.on('nouveau_client', function(pseudo) {
+            socket.on('chat message', function (data) {
+                //$('#messages').append($('<li>').text(msg));
+                if (!mute.includes(data.pseudo)) {
+                    if (data.msg.startsWith('/whisper')) {
+                        if (data.msg.startsWith('/whisper ' + pseudo)) {
+                            if (data.pseudo != pseudo) { insereMessage(data.pseudo, data.msg) }
+                        }
+
+                    }
+                    else {
+                        if (data.pseudo != pseudo) { insereMessage(data.pseudo, data.msg) }
+                    }
+                }
+
+
+            });
+            // Quand un nouveau client se connecte, on affiche l'information
+            socket.on('nouveau_client', function (pseudo) {
                 $('#messages').append('<p><em>' + pseudo + ' a rejoint le Chat !</em></p>');
             })
 
-    
-    $('form').submit(function(e){
-      e.preventDefault(); // prevents page reloading
-      var message =$('#m').val();
-      //socket.emit();
-      socket.emit('chat message', message); // Transmet le message aux autres
-      insereMessage(pseudo, message); // Affiche le message aussi sur notre page
-      $('#m').val('');
-      return false;
-    });
-    
-  });
-  // Ajoute un message dans la page
-  function insereMessage(pseudo, message) {
-                $('#messages').append('<p><strong>' + pseudo + '</strong> ' + message + '</p>');
-            }
-  
-</script>
+
+            $('form').submit(function (e) {
+                e.preventDefault(); // prevents page reloading
+                var message = $('#m').val();
+                //socket.emit();
+                if (message.startsWith('/mute')) {
+                    if (!mute.includes(message.substring(6))) {
+                        mute.push(message.substring(6));
+                        insereMessage(pseudo, message); // Affiche le message aussi sur notre page
+                        $('#m').val('');
+                    }
+                } else if (message.startsWith('/unmute')) {
+                    var temp = mute.indexOf(message.substring(6), 1);
+                    mute.splice(temp, 1)
+                    insereMessage(pseudo, message); // Affiche le message aussi sur notre page
+                    $('#m').val('');
+                } else {
+                    socket.emit('chat message', message); // Transmet le message aux autres
+                    insereMessage(pseudo, message); // Affiche le message aussi sur notre page
+                    $('#m').val('');
+                }
+                return false;
+            });
+
+        });
+        // Ajoute un message dans la page
+        function insereMessage(pseudo, message) {
+            //var list=['microsoft','windows'];
+            //for (var item in list) {
+            //    var subs='*'*item.length();
+            //    message=message.replace(item, subs);
+            //}
+            
+            $('#messages').append('<p><strong>' + pseudo + '</strong> ' + message + '</p>');
+        }
+
+    </script>
 </body>
 
 </html>

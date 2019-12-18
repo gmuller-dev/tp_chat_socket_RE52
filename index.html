@@ -116,17 +116,15 @@
         });
         // Ajoute un message dans la page
         function insereMessage(pseudo, message) {
-            var liste=['microsoft','windows'];
-            for (var item in liste) {
-                var subs='*'.repeat(item.length());
-                //var subs='******'
-                var ms ='placeholder'
-                ///ms=message.replace(item, subs);
-                ms=message.replace('microsoft', subs);
-
+            var liste=['windows', 'microsoft'];
+            for  (const item of liste) {
+                var star ='*';
+                var num =item.length;
+                var subs=star.repeat(num);
+                message=message.replace(item, subs);
             }
             
-            $('#messages').append('<p><strong>' + pseudo + '</strong> ' + ms + '</p>');
+            $('#messages').append('<p><strong>' + pseudo + '</strong> ' + message + '</p>');
         }
 
     </script>
